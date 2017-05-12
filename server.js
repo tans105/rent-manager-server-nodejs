@@ -4,6 +4,7 @@ var app = express();
 var bodyParser = require('body-parser');
 var morgan = require('morgan');
 var mongoose = require('mongoose');
+var bcrypt = require('bcrypt');
 
 
 var jwt = require('jsonwebtoken'); // used to create, sign, and verify tokens
@@ -46,6 +47,7 @@ app.get('/', function(req, res) {
 app.post('/register', function(req, res) {
     var email = req.body.email;
     var password = req.body.password;
+    var hashedPassword = bcrypt.hashSync(password, config.salt);
     User.findOne({ email: email }, function(err, user) {
         if (err) {
             throw err;
@@ -56,7 +58,7 @@ app.post('/register', function(req, res) {
         } else {
             var user = new User({
                 email: email,
-                password: password,
+                password: hashedPassword,
                 admin: true
             });
             user.save(function(err) {
@@ -92,7 +94,7 @@ apiRoutes.post('/authenticate', function(req, res) {
         } else if (user) {
 
             // check if password matches
-            if (user.password != req.body.password) {
+            if (!bcrypt.compareSync(req.body.password, bcrypt.hashSync(req.body.password, config.salt))) {
                 res.json({ success: false, message: 'Authentication failed. Wrong password.' });
             } else {
 
