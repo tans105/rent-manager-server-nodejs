@@ -51,7 +51,7 @@ app.post('/register', function(req, res) {
             throw err;
         }
         if (user) {
-        	console.log('Email already existing');
+            console.log('Email already existing');
             res.json({ success: false, message: 'Email already existing' });
         } else {
             var user = new User({
@@ -101,13 +101,19 @@ apiRoutes.post('/authenticate', function(req, res) {
                 var token = jwt.sign(user, app.get('superSecret'), {
                     expiresIn: 60 * 60 * 24 // expires in 24 hours
                 });
-
-                // return the information including token as JSON
-                res.json({
-                    success: true,
-                    message: 'Enjoy your token!',
-                    token: token
+                User.findOneAndUpdate({ 'email': req.body.email }, { $set: { token: token , token_modified_on: new Date()} }, { upsert: false }, function(err) {
+                    if (err) {
+                        throw err;
+                    } else {
+                        res.json({
+                            success: true,
+                            message: 'Enjoy your token!',
+                            token: token
+                        });
+                    }
                 });
+                // return the information including token as JSON
+
             }
 
         }

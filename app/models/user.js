@@ -6,6 +6,8 @@ var Schema = mongoose.Schema;
 module.exports = mongoose.model('User', new Schema({ 
     email: String, 
     password: String,
+    token: String,
+    token_modified_on: { type : Date}, 
     created_on : { type : Date, default: Date.now }, 
     admin: Boolean 
 }));
